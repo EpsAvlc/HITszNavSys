@@ -4,7 +4,7 @@
 
 #ifndef PROJECT_TOOLS_H
 #define PROJECT_TOOLS_H
-namespace CMDTools
+namespace CUI
 {
     enum Color
     {
@@ -20,6 +20,7 @@ namespace CMDTools
     void SetCursorPos(int x, int y);
     void SetForegroundColor(const Color& c);
     void SetBackgroundColor(const Color& c);
+    void ReverseColor();
 }
 
 #endif //PROJECT_TOOLS_H

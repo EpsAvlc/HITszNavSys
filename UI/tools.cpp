@@ -1,21 +1,23 @@
 #include "tools.h"
 #include <iostream>
 
-#define linux
 
-#ifdef linux
-void CMDTools::SetCursorPos(int x, int y)
+void CUI::SetCursorPos(int x, int y)
 {
     printf("\033[%d;%df", y, x);
 }
 
-void CMDTools::SetForegroundColor(const Color& c)
+void CUI::SetForegroundColor(const Color& c)
 {
-    printf("\033[1;%dm", c);
+    printf("\033[%dm", c);
 }
 
-void CMDTools::SetBackgroundColor(const Color& c)
+void CUI::SetBackgroundColor(const Color& c)
 {
-    printf("\033[1;%dm", c+10);
+    printf("\033[%dm", c+10);
 }
-#endif
+
+void CUI::ReverseColor()
+{
+    std::cout << "\033[7m";
+}

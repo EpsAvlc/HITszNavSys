@@ -1,15 +1,15 @@
+#include "UI/tools.h"
+#include "campus_graph.h"
 #include <iostream>
-#include "tools.h"
 
 void SetTitle()
 {
-    CMDTools::SetForegroundColor(CMDTools::Color::RED);
-    CMDTools::SetBackgroundColor(CMDTools::Color::WHITE);
-    CMDTools::SetCursorPos(22, 0);
-    printf("HITSZ Campus Navigation System \n");
 }
 
 int main()
 {
-    
+    CampusGraph cg;
+    CampusGraphDrawer cgd(cg);
+    cgd.Spin();
+    return 0;
 }
