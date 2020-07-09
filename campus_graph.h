@@ -39,16 +39,25 @@ class CampusGraph
 public:
     friend CampusGraphDrawer;
     CampusGraph();
+    /**
+     * @brief Query the best path from start to end via n spots.
+     * 
+     * @param start 
+     * @param end 
+     * @param n 
+     */
     void QueryPath(CampusVertex& start, CampusVertex& end, int n);
 private:
     void addVertices();
     void addEdges();
+    bool queryPathSub(CampusVertex& v, CampusVertex& end, int n, std::map<std::string, int>& visited);
 
     std::vector<CampusVertex> vertices_;
     /* Map vertice from its name to itself*/
-    std::map<std::string, CampusVertex> vertices_map_;
+    std::map<std::string, CampusVertex*> vertices_map_;
     std::map<std::string, int> vertices_index_map_;
     std::vector<std::pair<std::string, std::string>> edges_;
+
 };
 
 class CampusGraphDrawer

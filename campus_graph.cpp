@@ -22,6 +22,7 @@ CampusGraph::CampusGraph()
 {
     addVertices();
     addEdges();
+    QueryPath(vertices_[0], vertices_[4], 5);
 }
 
 void CampusGraph::addVertices()
@@ -89,7 +90,7 @@ void CampusGraph::addVertices()
 
     for(int i = 0; i < vertices_.size(); i++)
     {
-        vertices_map_[vertices_[i].name] = vertices_[i];
+        vertices_map_[vertices_[i].name] = &vertices_[i];
         vertices_index_map_[vertices_[i].name] = i;
     }
 }
@@ -109,9 +110,43 @@ void CampusGraph::addEdges()
 
     for(int i = 0; i < edges_.size(); i++)
     {
-        vertices_map_[edges_[i].first].neighbours.push_back(&vertices_map_[edges_[i].second]);
-        vertices_map_[edges_[i].second].neighbours.push_back(&vertices_map_[edges_[i].second]);
+        vertices_map_[edges_[i].first]->neighbours.push_back(vertices_map_[edges_[i].second]);
+        vertices_map_[edges_[i].second]->neighbours.push_back(vertices_map_[edges_[i].first]);
     }
+}
+
+void CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, int n)
+{
+    map<string, int> visited;
+    visited[start.name] = n;
+    queryPathSub(start, end, n-1, visited);
+}
+
+bool CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n, map<string, int>& visited)
+{
+    cout << v.name << ", " << n << endl;
+    if(n == 0)
+    {
+        if(v.name == end.name)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
+    for(int i = 0; i < v.neighbours.size(); i++)
+    {
+        if(visited[v.neighbours[i]->name] != 0)
+            continue;
+        visited[v.neighbours[i]->name] = n;
+        queryPathSub(*v.neighbours[i], end, n-1, visited);
+        visited[v.neighbours[i]->name] = 0;
+    }
+
+    return true;
 }
 
 /*------------ CampusGraphDrawer --------------*/
