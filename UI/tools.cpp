@@ -7,6 +7,10 @@ void CUI::SetCursorPos(int x, int y)
     printf("\033[%d;%df", y, x);
 }
 
+void CUI::SetCursorPos(CUI::PointI& pt)
+{
+    printf("\033[%d;%df", pt.y, pt.x);
+}
 void CUI::SetForegroundColor(const Color& c)
 {
     printf("\033[%dm", c);

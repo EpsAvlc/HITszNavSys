@@ -15,8 +15,10 @@
 #include <thread>
 #include <functional>
 #include <mutex>
+#include <map>
 
 #include "UI/button.h"
+#include "UI/polyline.h"
 
 struct CampusVertex
 {
@@ -24,6 +26,7 @@ struct CampusVertex
     float y;
     std::string name;
     std::string description;
+    std::vector<CampusVertex*> neighbours;
     CampusVertex(){};
     CampusVertex(std::string _name, float _x, float _y, std::string _description = "")
         : name(_name), x(_x), y(_y), description(_description) {};
@@ -36,10 +39,16 @@ class CampusGraph
 public:
     friend CampusGraphDrawer;
     CampusGraph();
+    void QueryPath(CampusVertex& start, CampusVertex& end, int n);
 private:
     void addVertices();
+    void addEdges();
 
     std::vector<CampusVertex> vertices_;
+    /* Map vertice from its name to itself*/
+    std::map<std::string, CampusVertex> vertices_map_;
+    std::map<std::string, int> vertices_index_map_;
+    std::vector<std::pair<std::string, std::string>> edges_;
 };
 
 class CampusGraphDrawer
@@ -65,6 +74,7 @@ private:
     SystemState state_ = NAVIGATION;
 
     std::vector<CUI::Button> buttons_;
+    std::vector<CUI::Polyline> polylines_;
 };
 
 #endif // !CAMPUS_GRAPH__

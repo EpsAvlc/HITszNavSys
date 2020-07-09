@@ -7,14 +7,17 @@
  * Author: EpsAvlc
  */
 
+#ifndef CONTROL_H__
+#define CONTROL_H__
 namespace CUI
 {
     class Control
     {
     public:
-
+        virtual void Draw() = 0;
     protected:
         float x_ = 0;
         float y_ = 0;
     };
 }
+#endif // !CONTROL_H__

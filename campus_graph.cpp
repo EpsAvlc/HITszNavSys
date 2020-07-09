@@ -21,6 +21,7 @@ using namespace std;
 CampusGraph::CampusGraph()
 {
     addVertices();
+    addEdges();
 }
 
 void CampusGraph::addVertices()
@@ -85,6 +86,32 @@ void CampusGraph::addVertices()
     v.name = "H";
     v.description = "";
     vertices_.push_back(v);
+
+    for(int i = 0; i < vertices_.size(); i++)
+    {
+        vertices_map_[vertices_[i].name] = vertices_[i];
+        vertices_index_map_[vertices_[i].name] = i;
+    }
+}
+
+void CampusGraph::addEdges()
+{
+    edges_.push_back(make_pair("E", "D"));
+    edges_.push_back(make_pair("D", "F"));
+    edges_.push_back(make_pair("C", "F"));
+    edges_.push_back(make_pair("C", "A"));
+    edges_.push_back(make_pair("B", "A"));
+    edges_.push_back(make_pair("B", "G"));
+    edges_.push_back(make_pair("K", "G"));
+    edges_.push_back(make_pair("K", "J"));
+    edges_.push_back(make_pair("H", "J"));
+    edges_.push_back(make_pair("H", "K"));
+
+    for(int i = 0; i < edges_.size(); i++)
+    {
+        vertices_map_[edges_[i].first].neighbours.push_back(&vertices_map_[edges_[i].second]);
+        vertices_map_[edges_[i].second].neighbours.push_back(&vertices_map_[edges_[i].second]);
+    }
 }
 
 /*------------ CampusGraphDrawer --------------*/
@@ -104,6 +131,16 @@ CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg}
         float grid_y = (cg_.vertices_[i].y - origin_y) / kGridHeight;
         CUI::Button b(grid_x, grid_y, cg_.vertices_[i].name);
         buttons_.push_back(b);
+    }
+    for(int i = 0; i < cg_.edges_.size(); i++)
+    {
+        CUI::PointI start, end;
+        start.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().x;
+        start.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().y;
+        end.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().x;
+        end.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
+        CUI::Polyline pl(start, end);
+        polylines_.push_back(pl);
     }
 };
 
@@ -158,6 +195,12 @@ void CampusGraphDrawer::drawNavigation()
     CUI::SetBackgroundColor(CUI::Color::BLUE);
     CUI::SetCursorPos(0, 0);
     printf("                      HITSZ Campus Navigation System                       \n");
+
+    for(int i = 0; i < polylines_.size(); i++)
+    {
+        polylines_[i].Draw();
+    }
+    // polylines_.back().Draw();
 
     for(int i = 0; i < buttons_.size(); i++)
     {

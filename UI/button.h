@@ -27,12 +27,12 @@ namespace CUI
                 x_ = x;
                 y_ = y;
             }
-        void Draw();
+        virtual void Draw() override;
         void SetCurserOn(bool on)
         {
             curserOn_ = on;
         }
-
+        PointI Pos(){return PointI(x_, y_);}
     protected:
         std::string text_;
         bool curserOn_ = false;
