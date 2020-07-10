@@ -46,17 +46,23 @@ public:
      * @param end 
      * @param n 
      */
-    void QueryPath(CampusVertex& start, CampusVertex& end, int n);
+    std::vector<std::string> QueryPath(CampusVertex& start, CampusVertex& end, int n);
+    std::vector<std::string> QueryPath(const std::string& start, const std::string& end, int n)
+    {
+        return QueryPath(*vertices_map_[start], *vertices_map_[end], n);
+    }
 private:
     void addVertices();
     void addEdges();
-    bool queryPathSub(CampusVertex& v, CampusVertex& end, int n, std::map<std::string, int>& visited);
+    void queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
+    std::map<std::string, int>& visited, std::vector<std::vector<std::string>>& res);
 
     std::vector<CampusVertex> vertices_;
     /* Map vertice from its name to itself*/
     std::map<std::string, CampusVertex*> vertices_map_;
     std::map<std::string, int> vertices_index_map_;
     std::vector<std::pair<std::string, std::string>> edges_;
+    std::map<std::pair<std::string, std::string>, int> edges_map_;
 
 };
 

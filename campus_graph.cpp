@@ -9,6 +9,7 @@
 
 #include "campus_graph.h"
 #include <chrono>
+#include <algorithm>
 #include <stdio.h>                                 
 #include <stdlib.h>
 #include <fcntl.h>
@@ -22,7 +23,6 @@ CampusGraph::CampusGraph()
 {
     addVertices();
     addEdges();
-    QueryPath(vertices_[0], vertices_[4], 5);
 }
 
 void CampusGraph::addVertices()
@@ -112,41 +112,54 @@ void CampusGraph::addEdges()
     {
         vertices_map_[edges_[i].first]->neighbours.push_back(vertices_map_[edges_[i].second]);
         vertices_map_[edges_[i].second]->neighbours.push_back(vertices_map_[edges_[i].first]);
+
+        edges_map_[make_pair(edges_[i].first, edges_[i].second)] = i;
+        edges_map_[make_pair(edges_[i].second, edges_[i].first)] = i;
     }
 }
 
-void CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, int n)
+vector<string> CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, int n)
 {
     map<string, int> visited;
     visited[start.name] = n;
-    queryPathSub(start, end, n-1, visited);
+    vector<vector<string>> visited_res;
+    queryPathSub(start, end, n-1, visited, visited_res);
+    
+    return visited_res[0];
 }
 
-bool CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n, map<string, int>& visited)
+void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
+    map<string, int>& visited, vector<vector<string>>& visited_res)
 {
     cout << v.name << ", " << n << endl;
     if(n == 0)
     {
         if(v.name == end.name)
         {
-            return true;
+            vector<string> visited_order;
+            for(auto item:visited)
+            {
+                if(item.second != 0)
+                    visited_order.push_back(item.first);
+            }
+            sort(visited_order.begin(), visited_order.end(), 
+            [&visited](string& lhs, string& rhs)
+            {
+                return visited[lhs] > visited[rhs];
+            }
+            );
+            visited_res.push_back(visited_order);
         }
-        else
-        {
-            return false;
-        }
-        
+        return;
     }
     for(int i = 0; i < v.neighbours.size(); i++)
     {
         if(visited[v.neighbours[i]->name] != 0)
             continue;
         visited[v.neighbours[i]->name] = n;
-        queryPathSub(*v.neighbours[i], end, n-1, visited);
+        queryPathSub(*v.neighbours[i], end, n-1, visited, visited_res);
         visited[v.neighbours[i]->name] = 0;
     }
-
-    return true;
 }
 
 /*------------ CampusGraphDrawer --------------*/
@@ -176,6 +189,13 @@ CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg}
         end.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
         CUI::Polyline pl(start, end);
         polylines_.push_back(pl);
+    }
+    /* Test */
+    vector<string> res = cg_.QueryPath("A", "H", 5);
+    for(int i = 1; i < res.size(); i++)
+    {
+        int edge_index = cg_.edges_map_[make_pair(res[i], res[i-1])];
+        polylines_[edge_index].SetActive(true);
     }
 };
 

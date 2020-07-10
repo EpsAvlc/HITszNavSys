@@ -15,7 +15,10 @@ using namespace CUI;
 using namespace std;
 void Polyline::Draw()
 {
-    SetForegroundColor(BLUE);
+    if(active_)
+        SetForegroundColor(GREEN);
+    else
+        SetForegroundColor(BLUE);
     SetBackgroundColor(WHITE);
     PointI horizon_start = start_.x < end_.x ? PointI(start_) : PointI(end_);
     PointI vertical_start;
