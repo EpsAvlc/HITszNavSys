@@ -52,7 +52,7 @@ void CampusGraph::addVertices()
     v.description = "";
     vertices_.push_back(v);
 
-    v.x = 248;
+    v.x = 260;
     v.y = 163;
     v.name = "A";
     v.description = "";
@@ -70,19 +70,19 @@ void CampusGraph::addVertices()
     v.description = "";
     vertices_.push_back(v);
 
-    v.x = 428;
+    v.x = 400;
     v.y = 228;
     v.name = "K";
     v.description = "";
     vertices_.push_back(v);
 
-    v.x = 427;
+    v.x = 400;
     v.y = 282;
     v.name = "J";
     v.description = "";
     vertices_.push_back(v);
 
-    v.x = 461;
+    v.x = 440;
     v.y = 303;
     v.name = "H";
     v.description = "";
@@ -173,30 +173,35 @@ CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg}
     const float origin_y = 20;
     const float kGridWidth = 5;
     const float kGridHeight = 30;
+
+    /* Vertices button */
     for(int i = 0; i < cg_.vertices_.size(); i++)
     {
         float grid_x = (cg_.vertices_[i].x - origin_x) / kGridWidth;
         float grid_y = (cg_.vertices_[i].y - origin_y) / kGridHeight;
         CUI::Button b(grid_x, grid_y, cg_.vertices_[i].name);
-        buttons_.push_back(b);
+        vertex_buttons_.push_back(b);
     }
+    
+    CUI::Button nav_button(20, 5, "Navigation");
+    nav_button.SetPadding(2, 1);
+    CUI::Button detail_button(45, 5, "Detail");
+    detail_button.SetPadding(2, 1);
+    menu_buttons_.push_back(nav_button);
+    menu_buttons_.push_back(detail_button);
+
     for(int i = 0; i < cg_.edges_.size(); i++)
     {
         CUI::PointI start, end;
-        start.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().x;
-        start.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().y;
-        end.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().x;
-        end.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
+        start.x = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().x;
+        start.y = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().y;
+        end.x = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().x;
+        end.y = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
         CUI::Polyline pl(start, end);
         polylines_.push_back(pl);
     }
-    /* Test */
-    vector<string> res = cg_.QueryPath("A", "H", 5);
-    for(int i = 1; i < res.size(); i++)
-    {
-        int edge_index = cg_.edges_map_[make_pair(res[i], res[i-1])];
-        polylines_[edge_index].SetActive(true);
-    }
+
+
 };
 
 void CampusGraphDrawer::Spin()
@@ -207,10 +212,45 @@ void CampusGraphDrawer::Spin()
     {
         if(state_changed_)
         {
+            if(state_ == WELCOME)
+            {
+                state_changed_ = false;
+                static int last_curserOn = 0;
+                menu_buttons_[last_curserOn].SetCurserOn(false);
+                switch (kb_input_)
+                {
+                case 'd':
+                case 's':
+                    if(last_curserOn < menu_buttons_.size() - 1)
+                        last_curserOn ++;
+                    break;
+                case 'a':
+                case 'w':
+                    if(last_curserOn > 0)
+                        last_curserOn --;
+                    break;
+                case 10:
+                    if(last_curserOn == 0)
+                    {
+                        state_changed_ = true;
+                        state_ = NAVIGATION;
+                    }
+                    else if (last_curserOn == 1)
+                    {
+                        state_changed_ = true;
+                        state_ = DETAIL;
+                    }
+                default:
+                    break;
+                }
+                menu_buttons_[last_curserOn].SetCurserOn(true);
+                drawWelcome();
+            }
             if(state_ == NAVIGATION)
             {
+                state_changed_ = false;
                 static int last_curserOn = 0;
-                buttons_[last_curserOn].SetCurserOn(false);
+                vertex_buttons_[last_curserOn].SetCurserOn(false);
                 switch (kb_input_)
                 {
                 case 'd':
@@ -222,20 +262,21 @@ void CampusGraphDrawer::Spin()
                 case 'w':
                     if(last_curserOn > 0)
                         last_curserOn --;
+                    break;
+            
                 default:
                     break;
                 }
-                buttons_[last_curserOn].SetCurserOn(true);
+                vertex_buttons_[last_curserOn].SetCurserOn(true);
                 drawNavigation();
             }
 
-            state_changed_ = false;
         } 
-        this_thread::sleep_for(chrono::milliseconds(300));
+        this_thread::sleep_for(chrono::milliseconds(30));
     }
 }
 
-void CampusGraphDrawer::drawNavigation()
+void CampusGraphDrawer::drawBackground()
 {
     CUI::SetBackgroundColor(CUI::Color::WHITE);
     char blank[75] = {};
@@ -250,16 +291,36 @@ void CampusGraphDrawer::drawNavigation()
     CUI::SetBackgroundColor(CUI::Color::BLUE);
     CUI::SetCursorPos(0, 0);
     printf("                      HITSZ Campus Navigation System                       \n");
+    
+    CUI::SetBackgroundColor(CUI::Color::GREEN);
+    CUI::SetForegroundColor(CUI::Color::WHITE);
+    CUI::SetCursorPos(0, 11);
+    printf("                          Designed By Cao Ming                             \n");
+}
+
+void CampusGraphDrawer::drawWelcome()
+{
+    drawBackground();
+
+
+    for(int i = 0; i < menu_buttons_.size(); i++)
+    {
+        menu_buttons_[i].Draw();
+    }
+}
+
+void CampusGraphDrawer::drawNavigation()
+{
+    drawBackground();
 
     for(int i = 0; i < polylines_.size(); i++)
     {
         polylines_[i].Draw();
     }
-    // polylines_.back().Draw();
 
-    for(int i = 0; i < buttons_.size(); i++)
+    for(int i = 0; i < vertex_buttons_.size(); i++)
     {
-        buttons_[i].Draw();
+        vertex_buttons_[i].Draw();
     }
 }
 
@@ -294,6 +355,7 @@ void CampusGraphDrawer::readKeyboardInput()
         case 'w': // up
         case 'd': // right
         case 's': // down
+        case 10: // enter
             state_changed_ = true;
             kb_input_ = c;
             break;

@@ -32,12 +32,17 @@ namespace CUI
         {
             curserOn_ = on;
         }
+        void SetPadding(int padding_w, int padding_h)
+        {
+            padding_h_ = padding_h;
+            padding_w_ = padding_w;
+        }
         PointI Pos(){return PointI(x_, y_);}
     protected:
         std::string text_;
         bool curserOn_ = false;
-        int height_ = 1;
-        int width_ = 4;
+        int padding_w_ = 2;
+        int padding_h_ = 0;
         Color bg_color_ = BLUE;
         Color bg_color_curserOn = GREEN;
         Color fg_color_curserOn_ = YELLO;

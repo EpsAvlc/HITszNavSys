@@ -78,7 +78,9 @@ private:
         NAVIGATION,
         DETAIL
     };
+    void drawBackground();
     void drawNavigation();
+    void drawWelcome();
     void readKeyboardInput();
 
     std::thread kb_thread_; 
@@ -86,9 +88,10 @@ private:
     std::mutex kb_mutex_;
     bool state_changed_ = true;
     CampusGraph cg_;
-    SystemState state_ = NAVIGATION;
+    SystemState state_ = WELCOME;
 
-    std::vector<CUI::Button> buttons_;
+    std::vector<CUI::Button> vertex_buttons_;
+    std::vector<CUI::Button> menu_buttons_;
     std::vector<CUI::Polyline> polylines_;
 };
 
