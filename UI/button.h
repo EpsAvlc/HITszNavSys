@@ -32,6 +32,10 @@ namespace CUI
         {
             curserOn_ = on;
         }
+        void SetPressed(bool pressed)
+        {
+            pressed_ = pressed;
+        }
         void SetPadding(int padding_w, int padding_h)
         {
             padding_h_ = padding_h;
@@ -41,12 +45,15 @@ namespace CUI
     protected:
         std::string text_;
         bool curserOn_ = false;
+        bool pressed_ = false;
         int padding_w_ = 2;
         int padding_h_ = 0;
         Color bg_color_ = BLUE;
         Color bg_color_curserOn = GREEN;
         Color fg_color_curserOn_ = YELLO;
         Color fg_color_ = WHITE;
+        Color bg_color_pressed_ = RED;
+        Color fg_color_pressed_ = YELLO;
     };
 }
 

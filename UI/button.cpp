@@ -15,15 +15,20 @@ using namespace CUI;
 void Button::Draw()
 {
     SetCursorPos(x_, y_);
-    if(!curserOn_)
-    {
-        SetBackgroundColor(bg_color_);
-        SetForegroundColor(fg_color_);
-    }
-    else
+    if(curserOn_)
     {
         SetBackgroundColor(bg_color_curserOn);
         SetForegroundColor(fg_color_curserOn_);
+    }
+    else if(pressed_)
+    {
+        SetBackgroundColor(bg_color_pressed_);
+        SetForegroundColor(fg_color_pressed_);
+    }
+    else
+    {
+        SetBackgroundColor(bg_color_);
+        SetForegroundColor(fg_color_);
     }
     for(int i = 0; i < padding_h_; i++)
     {

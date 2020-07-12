@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_library(tools UI/tools.cpp)
 
-add_library(CUI_LIB UI/button.cpp UI/polyline.cpp)
+add_library(CUI_LIB UI/button.cpp UI/polyline.cpp UI/text.cpp)
 target_link_libraries(CUI_LIB tools)
 
 add_library(campus_graph campus_graph.cpp)

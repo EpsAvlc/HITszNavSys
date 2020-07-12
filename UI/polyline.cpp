@@ -16,7 +16,7 @@ using namespace std;
 void Polyline::Draw()
 {
     if(active_)
-        SetForegroundColor(GREEN);
+        SetForegroundColor(RED);
     else
         SetForegroundColor(BLUE);
     SetBackgroundColor(WHITE);
