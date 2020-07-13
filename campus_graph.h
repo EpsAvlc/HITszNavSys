@@ -93,9 +93,9 @@ private:
     std::thread kb_thread_; 
     char kb_input_;
     std::mutex kb_mutex_;
-    bool state_changed_ = true;
+    bool state_changed_ = true, pressed_ = true;;
     CampusGraph cg_;
-    SystemState state_ = NAVIGATION;
+    SystemState state_ = WELCOME;
 
     std::vector<CUI::Button> vertex_buttons_;
     std::vector<CUI::Button> menu_buttons_;

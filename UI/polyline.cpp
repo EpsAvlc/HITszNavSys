@@ -28,7 +28,10 @@ void Polyline::Draw()
     {
         horizon_start.x ++;
         SetCursorPos(horizon_start);
-        cout << "─";
+        if(active_)
+            cout << "━";
+        else
+            cout << "─";
     }
     SetCursorPos(vertical_start);
     for(int i = 0; i < abs(end_.y - start_.y); i++)
@@ -36,10 +39,18 @@ void Polyline::Draw()
         SetCursorPos(vertical_start);
         if(i == 0)
         {
-            cout << "┐";
+            if(active_)
+                cout << "┓";
+            else
+                cout << "┐";
         }
         else 
-            cout << "│";
+        {
+            if(active_)
+                cout << "┃";
+            else
+                cout << "│";
+        }
         vertical_start.y ++ ;
     }
 }

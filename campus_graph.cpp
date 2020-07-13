@@ -52,42 +52,42 @@ void CampusGraph::addVertices()
     v.x = 226;
     v.y = 120;
     v.name = "C";
-    v.description = "Buiding C, Mechanical building, locates at (" + to_string((int)v.x) + 
+    v.description = "Buiding C, Mechantronic building, locates at (" + to_string((int)v.x) + 
         ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 260;
     v.y = 163;
     v.name = "A";
-    v.description = "Buiding A, Teaching buliding, locates at (" + to_string((int)v.x) + 
+    v.description = "Buiding A, Teaching buliding I, locates at (" + to_string((int)v.x) + 
         ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 303;
     v.y = 149;
     v.name = "B";
-    v.description = "Buiding B, Administration building, locates at (" + to_string((int)v.x) + 
+    v.description = "Buiding B, Social Science building, locates at (" + to_string((int)v.x) + 
         ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 345;
     v.y = 189;
     v.name = "G";
-    v.description = "Buiding G, Science building, locates at (" + to_string((int)v.x) + 
+    v.description = "Buiding G, Sciences building, locates at (" + to_string((int)v.x) + 
         ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 400;
     v.y = 228;
     v.name = "K";
-    v.description = "Buiding K, Practical building, locates at (" + to_string((int)v.x) + 
+    v.description = "Buiding K, Experiment building, locates at (" + to_string((int)v.x) + 
      ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 400;
     v.y = 282;
     v.name = "J";
-    v.description = "Building J, Activity center, locates at (" + to_string((int)v.x) + 
+    v.description = "Building J, Recreation center, locates at (" + to_string((int)v.x) + 
      ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
@@ -224,7 +224,7 @@ CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg}
     /* Menu buttons */
     CUI::Button nav_button(20, 5, "Navigation");
     nav_button.SetPadding(2, 1);
-    CUI::Button detail_button(45, 5, "Detail");
+    CUI::Button detail_button(45, 5, "Guide");
     detail_button.SetPadding(2, 1);
     menu_buttons_.push_back(nav_button);
     menu_buttons_.push_back(detail_button);
@@ -257,11 +257,10 @@ void CampusGraphDrawer::Spin()
     char c;
     while(1)
     {
-        if(state_changed_)
+        if(pressed_ || state_changed_)
         {
             if(state_ == WELCOME)
             {
-                state_changed_ = false;
                 static int last_curserOn = 0;
                 menu_buttons_[last_curserOn].SetCurserOn(false);
                 switch (kb_input_)
@@ -279,12 +278,12 @@ void CampusGraphDrawer::Spin()
                 case 10:
                     if(last_curserOn == 0)
                     {
-                        state_changed_ = true;
                         state_ = NAVIGATION;
+                        state_changed_ = true;
                     }
                     else if (last_curserOn == 1)
                     {
-                        state_changed_ = true;
+                        // state_changed_ = true;
                         state_ = DETAIL;
                     }
                 default:
@@ -293,9 +292,8 @@ void CampusGraphDrawer::Spin()
                 menu_buttons_[last_curserOn].SetCurserOn(true);
                 drawWelcome();
             }
-            if(state_ == NAVIGATION)
+            else if(state_ == NAVIGATION)
             {
-                state_changed_ = false;
                 static int last_curserOn = 0;
                 static int pressed_count = 0;
                 vertex_buttons_[last_curserOn].SetCurserOn(false);
@@ -310,6 +308,8 @@ void CampusGraphDrawer::Spin()
                     }
 
                 }
+                if(pressed_ == true)
+                {
                 switch (kb_input_)
                 {
                 case 'd':
@@ -379,9 +379,12 @@ void CampusGraphDrawer::Spin()
                 vertex_buttons_[last_curserOn].SetCurserOn(true);
                 if(pressed_count != 3)
                     texts_[8].SetText(cg_.vertices_[last_curserOn].description);
+                }
                 drawNavigation();
+                state_changed_ =false;
             }
 
+            pressed_ = false;
         } 
         this_thread::sleep_for(chrono::milliseconds(30));
     }
@@ -491,7 +494,7 @@ void CampusGraphDrawer::readKeyboardInput()
         case 'd': // right
         case 's': // down
         case 10: // enter
-            state_changed_ = true;
+            pressed_ = true;
             kb_input_ = c;
             break;
         default:
@@ -499,7 +502,7 @@ void CampusGraphDrawer::readKeyboardInput()
         }
         if(c <= '9' && c >= '0')
         {
-            state_changed_ = true;
+            pressed_ = true;
             kb_input_ = c;
         }
     }
