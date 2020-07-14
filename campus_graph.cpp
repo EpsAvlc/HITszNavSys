@@ -98,6 +98,39 @@ void CampusGraph::addVertices()
      ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
+    v.x = 410;
+    v.y = 351;
+    v.name = "T";
+    v.description = "Building T, Teaching building II, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+    
+    v.x = 260;
+    v.y = 351;
+    v.name = "L1";
+    v.description = "Building L1, Dormitory II, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 147;
+    v.y = 351;
+    v.name = "L2";
+    v.description = "Building L2, Dormitory II, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 170;
+    v.y = 210;
+    v.name = "Litchi Hill 1";
+    v.description = "";
+    vertices_.push_back(v);
+
+    v.x = 300;
+    v.y = 230;
+    v.name = "Litchi Hill 2";
+    v.description = "";
+    vertices_.push_back(v);
+
     for(int i = 0; i < vertices_.size(); i++)
     {
         vertices_map_[vertices_[i].name] = &vertices_[i];
@@ -117,6 +150,12 @@ void CampusGraph::addEdges()
     edges_.push_back(make_pair("K", "J"));
     edges_.push_back(make_pair("H", "J"));
     edges_.push_back(make_pair("H", "K"));
+    edges_.push_back(make_pair("H", "T"));
+    edges_.push_back(make_pair("J", "T"));
+    edges_.push_back(make_pair("L1", "T"));
+    edges_.push_back(make_pair("L1", "A"));
+    edges_.push_back(make_pair("L1", "L2"));
+    edges_.push_back(make_pair("L2", "D"));
 
     for(int i = 0; i < edges_.size(); i++)
     {
@@ -178,6 +217,43 @@ void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n,
     }
 }
 
+int CampusGraph::getVertexNeighbour(int vertex_index, char neigh_dir)
+{
+    function<bool(int, int, int, int)> neigh_func;
+    switch (neigh_dir)
+    {
+    case 'w':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (y2 < y1) && (y1 - y2 > abs(x2-x1));};
+        break;
+    case 'a':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (x2 < x1) && (x1 - x2) > abs(y2 - y1);};
+        break;
+    case 's':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (y2 > y1) && (y2 - y1) > abs(x2- x1);};
+        break;
+    case 'd':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (x2 > x1) && (x2 -x1) > abs(y2 - y1);};
+        break;
+    default:
+        break;
+    }
+    vector<CampusVertex*> neighs = vertices_[vertex_index].neighbours;
+    for(int i = 0; i < neighs.size(); i++)
+    {
+        int x1 = vertices_[vertex_index].x;
+        int y1 = vertices_[vertex_index].y;
+        int x2 = neighs[i]->x;
+        int y2 = neighs[i]->y;
+        if(neigh_func(x1, y1, x2, y2))
+            return vertices_index_map_[neighs[i]->name];
+    }
+    return -1;
+}
+
 string CampusGraph::genResultDescription(vector<string>& res)
 {
     string description = "";
@@ -196,7 +272,7 @@ string CampusGraph::genResultDescription(vector<string>& res)
         description += "No way to reach the destination";
     }
     
-    description += ". \n Press Enter to return.";
+    description += ". Press Enter to return.";
     return description;
 }
 
@@ -218,6 +294,11 @@ CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg}
         float grid_x = (cg_.vertices_[i].x - origin_x) / kGridWidth;
         float grid_y = (cg_.vertices_[i].y - origin_y) / kGridHeight;
         CUI::Button b(grid_x, grid_y, cg_.vertices_[i].name);
+        if(cg_.vertices_[i].name.substr(0, 6) == "Litchi")
+        {
+            b.SetPadding(2, 1);
+            b.SetColor(CUI::RED);
+        }
         vertex_buttons_.push_back(b);
     }
 
@@ -312,16 +393,16 @@ void CampusGraphDrawer::Spin()
                 {
                 switch (kb_input_)
                 {
+                {
                 case 'd':
                 case 's':
-                    if(last_curserOn < cg_.vertices_.size() - 1)
-                        last_curserOn ++;
-                    break;
                 case 'a':
                 case 'w':
-                    if(last_curserOn > 0)
-                        last_curserOn --;
+                    int neigh = cg_.getVertexNeighbour(last_curserOn, kb_input_);
+                    if(neigh != -1)
+                        last_curserOn = neigh;
                     break;
+                }
                 case 10:
                     if(pressed_count == 0)
                     {
@@ -376,7 +457,8 @@ void CampusGraphDrawer::Spin()
                 default:
                     break;
                 }
-                vertex_buttons_[last_curserOn].SetCurserOn(true);
+                if(!vertex_buttons_[last_curserOn].Pressed())
+                    vertex_buttons_[last_curserOn].SetCurserOn(true);
                 if(pressed_count != 3)
                     texts_[8].SetText(cg_.vertices_[last_curserOn].description);
                 }
@@ -396,7 +478,7 @@ void CampusGraphDrawer::drawBackground()
     char blank[75] = {};
     memset(blank, ' ', 75);
     CUI::SetCursorPos(0, 0);
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 12; i++)
     {
         cout << string(blank) << endl;
     }
@@ -408,7 +490,7 @@ void CampusGraphDrawer::drawBackground()
     
     CUI::SetBackgroundColor(CUI::Color::GREEN);
     CUI::SetForegroundColor(CUI::Color::WHITE);
-    CUI::SetCursorPos(0, 11);
+    CUI::SetCursorPos(0, 13);
     printf("                          Designed By Cao Ming                             \n");
 
     if(state_ == NAVIGATION)
@@ -417,11 +499,11 @@ void CampusGraphDrawer::drawBackground()
         memset(side_blank, ' ', 40);
         CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
         CUI::SetForegroundColor(CUI::Color::WHITE);
-        for(int i = 1; i < 12; i++)
+        for(int i = 1; i < 14; i++)
         {
             if(i == 1)
                 CUI::SetBackgroundColor(CUI::Color::GREEN);
-            else if (i == 11)
+            else if (i == 13)
                 CUI::SetBackgroundColor(CUI::Color::BLUE);
             else
                 CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
@@ -460,6 +542,7 @@ void CampusGraphDrawer::drawNavigation()
     {
         texts_[i].Draw();
     }
+    
 }
 
 char nonblocking_input( void )

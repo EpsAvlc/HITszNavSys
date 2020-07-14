@@ -28,6 +28,11 @@ namespace CUI
                 y_ = y;
             }
         virtual void Draw() override;
+        void SetColor(Color bg_color = BLUE, Color fg_color = WHITE)
+        {
+            bg_color_ = bg_color;
+            fg_color_ = fg_color;
+        }
         void SetCurserOn(bool on)
         {
             curserOn_ = on;
@@ -42,6 +47,7 @@ namespace CUI
             padding_w_ = padding_w;
         }
         PointI Pos(){return PointI(x_, y_);}
+        bool Pressed() {return pressed_;}
     protected:
         std::string text_;
         bool curserOn_ = false;

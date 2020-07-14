@@ -23,8 +23,8 @@
 
 struct CampusVertex
 {
-    float x;
-    float y;
+    int x;
+    int y;
     std::string name;
     std::string description;
     std::vector<CampusVertex*> neighbours;
@@ -59,6 +59,14 @@ public:
 private:
     void addVertices();
     void addEdges();
+    /**
+     * @brief Get the Vertex Neighbour: Get a vertex's neighbour in a specific direction
+     * 
+     * @param vertex_index 
+     * @param neigh_dir: "w" "a" "s" "d" for differenct directions
+     * @return int: neighbour vertex's index. -1 for NULL
+     */
+    int getVertexNeighbour(int vertex_index, char neigh_dir);
     std::string genResultDescription(std::vector<std::string>& res);
     void queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
     std::map<std::string, int>& visited, std::vector<std::vector<std::string>>& res);
