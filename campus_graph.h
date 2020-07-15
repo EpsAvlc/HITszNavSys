@@ -17,9 +17,6 @@
 #include <mutex>
 #include <map>
 
-#include "UI/button.h"
-#include "UI/polyline.h"
-#include "UI/text.h"
 
 struct CampusVertex
 {
@@ -47,15 +44,24 @@ public:
      * @param end 
      * @param n 
      */
-    std::vector<std::string> QueryPath(CampusVertex& start, CampusVertex& end, int n);
-    std::vector<std::string> QueryPath(const int start, const int end, int n)
+    std::vector<std::string> QueryPathViaN(CampusVertex& start, CampusVertex& end, int n);
+    std::vector<std::string> QueryPathViaN(const int start, const int end, int n)
     {
-        return QueryPath(vertices_[start], vertices_[end], n);
+        return QueryPathViaN(vertices_[start], vertices_[end], n);
     }
-    std::vector<std::string> QueryPath(const std::string& start, const std::string& end, int n)
+    std::vector<std::string> QueryPathViaN(const std::string& start, const std::string& end, int n)
     {
-        return QueryPath(*vertices_map_[start], *vertices_map_[end], n);
+        return QueryPathViaN(*vertices_map_[start], *vertices_map_[end], n);
     }
+
+    /**
+     * @brief : Query Shortest Path between start and end. Use BST.
+     * 
+     * @param start: start vertex index 
+     * @param end: end vertex index
+     * @return std::vector<std::string> 
+     */
+    std::vector<std::string> QueryShortestPath(const int start, const int end);
 private:
     void addVertices();
     void addEdges();
@@ -70,6 +76,7 @@ private:
     std::string genResultDescription(std::vector<std::string>& res);
     void queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
     std::map<std::string, int>& visited, std::vector<std::vector<std::string>>& res);
+    float getPathLength(std::vector<std::string>& path_strs);
 
     std::vector<CampusVertex> vertices_;
     /* Map vertice from its name to itself*/
@@ -78,37 +85,6 @@ private:
     std::vector<std::pair<std::string, std::string>> edges_;
     std::map<std::pair<std::string, std::string>, int> edges_map_;
 
-};
-
-class CampusGraphDrawer
-{
-public:
-    CampusGraphDrawer(const CampusGraph& cg);
-    void Spin();
-private:
-    enum SystemState
-    {
-        WELCOME,
-        NAVIGATION,
-        DETAIL,
-        HELP,
-    };
-    void drawBackground();
-    void drawNavigation();
-    void drawWelcome();
-    void readKeyboardInput();
-
-    std::thread kb_thread_; 
-    char kb_input_;
-    std::mutex kb_mutex_;
-    bool state_changed_ = true, pressed_ = true;;
-    CampusGraph cg_;
-    SystemState state_ = WELCOME;
-
-    std::vector<CUI::Button> vertex_buttons_;
-    std::vector<CUI::Button> menu_buttons_;
-    std::vector<CUI::Text> texts_;
-    std::vector<CUI::Polyline> polylines_;
 };
 
 #endif // !CAMPUS_GRAPH__

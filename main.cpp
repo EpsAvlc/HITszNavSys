@@ -1,5 +1,6 @@
 #include "UI/tools.h"
 #include "campus_graph.h"
+#include "campus_graph_drawer.h"
 #include <iostream>
 
 int main()

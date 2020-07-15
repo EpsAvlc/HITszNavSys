@@ -9,7 +9,7 @@ add_library(tools UI/tools.cpp)
 add_library(CUI_LIB UI/button.cpp UI/polyline.cpp UI/text.cpp)
 target_link_libraries(CUI_LIB tools)
 
-add_library(campus_graph campus_graph.cpp)
+add_library(campus_graph campus_graph.cpp campus_graph_drawer.cpp)
 target_link_libraries(campus_graph
 CUI_LIB
 )

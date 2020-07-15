@@ -16,6 +16,7 @@
 #include <memory.h>
 #include <unistd.h>
 #include <termios.h>
+#include <cmath>
 
 using namespace std;
 
@@ -108,7 +109,7 @@ void CampusGraph::addVertices()
     v.x = 260;
     v.y = 351;
     v.name = "L1";
-    v.description = "Building L1, Dormitory II, locates at (" + to_string((int)v.x) + 
+    v.description = "Building L1, Dormitory I, locates at (" + to_string((int)v.x) + 
      ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
@@ -167,7 +168,7 @@ void CampusGraph::addEdges()
     }
 }
 
-vector<string> CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, int n)
+vector<string> CampusGraph::QueryPathViaN(CampusVertex& start, CampusVertex& end, int n)
 {
     map<string, int> visited;
     visited[start.name] = n;
@@ -176,7 +177,18 @@ vector<string> CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, in
     
     if(visited_res.size() > 0)
     {
-        return visited_res[0];
+        float shortest_length = numeric_limits<float>::max();
+        int shortest_index = -1;
+        for(int i = 0; i < visited_res.size(); i++)
+        {
+            float cur_length = getPathLength(visited_res[i]);
+            if(cur_length < shortest_length)
+            {
+                shortest_length = cur_length;
+                shortest_index = i;
+            }
+        }
+        return visited_res[shortest_index];
     }
     else
     {
@@ -215,6 +227,20 @@ void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n,
         queryPathSub(*v.neighbours[i], end, n-1, visited, visited_res);
         visited[v.neighbours[i]->name] = 0;
     }
+}
+
+float CampusGraph::getPathLength(std::vector<std::string>& path_strs)
+{
+    float res = 0;
+    for(int i = 0; i < path_strs.size()-1; i++)
+    {
+        CampusVertex& start = *vertices_map_[path_strs[i]];
+        CampusVertex& end = *vertices_map_[path_strs[i+1]];
+        float cur_length = sqrt((start.x - end.x) * (start.x - end.x)  +
+            (start.y - end.y) * (start.y - end.y));
+        res += cur_length;
+    }
+    return res;
 }
 
 int CampusGraph::getVertexNeighbour(int vertex_index, char neigh_dir)
@@ -276,317 +302,4 @@ string CampusGraph::genResultDescription(vector<string>& res)
     return description;
 }
 
-/*------------ CampusGraphDrawer --------------*/
 
-CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg} 
-{
-    kb_thread_ = std::thread(std::bind(&CampusGraphDrawer::readKeyboardInput, this));
-    kb_thread_.detach();
-
-    const float origin_x = 98;
-    const float origin_y = 20;
-    const float kGridWidth = 5;
-    const float kGridHeight = 30;
-
-    /* Vertices button */
-    for(int i = 0; i < cg_.vertices_.size(); i++)
-    {
-        float grid_x = (cg_.vertices_[i].x - origin_x) / kGridWidth;
-        float grid_y = (cg_.vertices_[i].y - origin_y) / kGridHeight;
-        CUI::Button b(grid_x, grid_y, cg_.vertices_[i].name);
-        if(cg_.vertices_[i].name.substr(0, 6) == "Litchi")
-        {
-            b.SetPadding(2, 1);
-            b.SetColor(CUI::RED);
-        }
-        vertex_buttons_.push_back(b);
-    }
-
-    /* Menu buttons */
-    CUI::Button nav_button(20, 5, "Navigation");
-    nav_button.SetPadding(2, 1);
-    CUI::Button detail_button(45, 5, "Guide");
-    detail_button.SetPadding(2, 1);
-    menu_buttons_.push_back(nav_button);
-    menu_buttons_.push_back(detail_button);
-
-    /* Texts */
-    CUI::Text t1 (CUI::PointI(80, 2), "1. Please select starting point", 33);
-    texts_.push_back(t1);
-    for(int i = 0; i < 8; i++)
-        texts_.push_back(CUI::Text(CUI::PointI(80, 2 + i), "", 33));
-    texts_[7].SetText("--------------------------");
-
-    /* Polylines */
-    for(int i = 0; i < cg_.edges_.size(); i++)
-    {
-        CUI::PointI start, end;
-        start.x = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().x;
-        start.y = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().y;
-        end.x = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().x;
-        end.y = vertex_buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
-        CUI::Polyline pl(start, end);
-        polylines_.push_back(pl);
-    }
-
-
-};
-
-void CampusGraphDrawer::Spin()
-{
-    system("clear");
-    char c;
-    while(1)
-    {
-        if(pressed_ || state_changed_)
-        {
-            if(state_ == WELCOME)
-            {
-                static int last_curserOn = 0;
-                menu_buttons_[last_curserOn].SetCurserOn(false);
-                switch (kb_input_)
-                {
-                case 'd':
-                case 's':
-                    if(last_curserOn < menu_buttons_.size() - 1)
-                        last_curserOn ++;
-                    break;
-                case 'a':
-                case 'w':
-                    if(last_curserOn > 0)
-                        last_curserOn --;
-                    break;
-                case 10:
-                    if(last_curserOn == 0)
-                    {
-                        state_ = NAVIGATION;
-                        state_changed_ = true;
-                    }
-                    else if (last_curserOn == 1)
-                    {
-                        // state_changed_ = true;
-                        state_ = DETAIL;
-                    }
-                default:
-                    break;
-                }
-                menu_buttons_[last_curserOn].SetCurserOn(true);
-                drawWelcome();
-            }
-            else if(state_ == NAVIGATION)
-            {
-                static int last_curserOn = 0;
-                static int pressed_count = 0;
-                vertex_buttons_[last_curserOn].SetCurserOn(false);
-                static string n_str = "";
-                static int from_vertex = -1, to_vertex = -1; 
-                if(kb_input_ <= '9' && kb_input_ >= '0')
-                {
-                    if(pressed_count == 2)
-                    {
-                        n_str += kb_input_;
-                        texts_[6].SetText(n_str);
-                    }
-
-                }
-                if(pressed_ == true)
-                {
-                switch (kb_input_)
-                {
-                {
-                case 'd':
-                case 's':
-                case 'a':
-                case 'w':
-                    int neigh = cg_.getVertexNeighbour(last_curserOn, kb_input_);
-                    if(neigh != -1)
-                        last_curserOn = neigh;
-                    break;
-                }
-                case 10:
-                    if(pressed_count == 0)
-                    {
-                        texts_[2].SetText(cg_.vertices_[last_curserOn].name);
-                        vertex_buttons_[last_curserOn].SetPressed(true);
-                        texts_[3].SetText("2. Please select destination.");
-                        from_vertex = last_curserOn;
-                    }
-                    if(pressed_count == 1)
-                    {
-                        texts_[4].SetText(cg_.vertices_[last_curserOn].name);
-                        vertex_buttons_[last_curserOn].SetPressed(true);
-                        texts_[5].SetText("Please input n.");
-                        to_vertex = last_curserOn;
-                    }
-                    if(pressed_count == 2)
-                    {
-                        int via_n = atoi(n_str.c_str());
-                        vector<string> res = cg_.QueryPath(from_vertex, to_vertex, via_n);
-                        for(int i = 0; i < (int)res.size() - 1; i++)
-                        {
-                            polylines_[cg_.edges_map_[make_pair(res[i], res[i+1])]].SetActive(true);
-                        }
-                        for(int i = 0; i < texts_.size(); i++)
-                        {
-                            texts_[i].SetText("");
-                        }
-                        string res_description = cg_.genResultDescription(res);
-                        texts_[0].SetText(res_description);
-                    }
-                    if(pressed_count == 3)
-                    {
-                        pressed_count = -1;
-                        for(int i = 0; i < vertex_buttons_.size(); i++)
-                        {
-                            vertex_buttons_[i].SetPressed(false);
-                        }
-                        for(int i = 0; i < polylines_.size(); i++)
-                        {
-                            polylines_[i].SetActive(false);
-                        }
-                        for(int i = 0; i < texts_.size(); i++)
-                        {
-                            texts_[i].SetText("");
-                        }
-                        n_str = "";
-                        texts_[0].SetText("1. Please select starting point.");
-                        
-                    }
-                    pressed_count ++;
-                    break;
-                default:
-                    break;
-                }
-                if(!vertex_buttons_[last_curserOn].Pressed())
-                    vertex_buttons_[last_curserOn].SetCurserOn(true);
-                if(pressed_count != 3)
-                    texts_[8].SetText(cg_.vertices_[last_curserOn].description);
-                }
-                drawNavigation();
-                state_changed_ =false;
-            }
-
-            pressed_ = false;
-        } 
-        this_thread::sleep_for(chrono::milliseconds(30));
-    }
-}
-
-void CampusGraphDrawer::drawBackground()
-{
-    CUI::SetBackgroundColor(CUI::Color::WHITE);
-    char blank[75] = {};
-    memset(blank, ' ', 75);
-    CUI::SetCursorPos(0, 0);
-    for(int i = 0; i < 12; i++)
-    {
-        cout << string(blank) << endl;
-    }
-
-    CUI::SetForegroundColor(CUI::Color::YELLO);
-    CUI::SetBackgroundColor(CUI::Color::BLUE);
-    CUI::SetCursorPos(0, 0);
-    printf("                      HITSZ Campus Navigation System                       \n");
-    
-    CUI::SetBackgroundColor(CUI::Color::GREEN);
-    CUI::SetForegroundColor(CUI::Color::WHITE);
-    CUI::SetCursorPos(0, 13);
-    printf("                          Designed By Cao Ming                             \n");
-
-    if(state_ == NAVIGATION)
-    {
-        char side_blank[40];
-        memset(side_blank, ' ', 40);
-        CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
-        CUI::SetForegroundColor(CUI::Color::WHITE);
-        for(int i = 1; i < 14; i++)
-        {
-            if(i == 1)
-                CUI::SetBackgroundColor(CUI::Color::GREEN);
-            else if (i == 13)
-                CUI::SetBackgroundColor(CUI::Color::BLUE);
-            else
-                CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
-            CUI::SetCursorPos(76, i);
-            cout << string(side_blank).substr(0, 39) << endl;
-        }
-    }
-}
-
-void CampusGraphDrawer::drawWelcome()
-{
-    drawBackground();
-
-
-    for(int i = 0; i < menu_buttons_.size(); i++)
-    {
-        menu_buttons_[i].Draw();
-    }
-}
-
-void CampusGraphDrawer::drawNavigation()
-{
-    drawBackground();
-
-    for(int i = 0; i < polylines_.size(); i++)
-    {
-        polylines_[i].Draw();
-    }
-
-    for(int i = 0; i < vertex_buttons_.size(); i++)
-    {
-        vertex_buttons_[i].Draw();
-    }
-
-    for(int i = 0; i < texts_.size(); i++)
-    {
-        texts_[i].Draw();
-    }
-    
-}
-
-char nonblocking_input( void )
-{
-    char input_ch;
-    struct termios newt, oldt;
-    
-    int tty = open("/dev/tty", O_RDONLY);    //Open control terminal
-    
-    tcgetattr(tty, &oldt);            //Get terminal properties
-    newt = oldt;
-    
-    //Set characters are not buffered(~ICANON) and do not echo(~ECHO).
-    //You can also choose only one of them.
-    newt.c_lflag &= ~( ICANON | ECHO );
-    tcsetattr(tty, TCSANOW, &newt);    
-    read(tty, &input_ch, 1);
-    tcsetattr(tty, TCSANOW, &oldt);        //Restore terminal properties
-    return input_ch;
-}
-
-void CampusGraphDrawer::readKeyboardInput()
-{
-    char c;
-    while(c = nonblocking_input())
-    {
-        lock_guard<mutex> kb_lock(kb_mutex_);
-        switch (c)
-        {
-        case 'a': // left
-        case 'w': // up
-        case 'd': // right
-        case 's': // down
-        case 10: // enter
-            pressed_ = true;
-            kb_input_ = c;
-            break;
-        default:
-            break;
-        }
-        if(c <= '9' && c >= '0')
-        {
-            pressed_ = true;
-            kb_input_ = c;
-        }
-    }
-}
