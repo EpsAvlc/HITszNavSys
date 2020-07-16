@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <cmath>
+#include <unordered_map>
 
 using namespace std;
 
@@ -24,6 +25,8 @@ CampusGraph::CampusGraph()
 {
     addVertices();
     addEdges();
+    vector<string> res = QueryShortestPath("E", "T");
+    cout << genResultDescription(res) << endl;
 }
 
 void CampusGraph::addVertices()
@@ -168,6 +171,7 @@ void CampusGraph::addEdges()
     }
 }
 
+
 vector<string> CampusGraph::QueryPathViaN(CampusVertex& start, CampusVertex& end, int n)
 {
     map<string, int> visited;
@@ -227,6 +231,76 @@ void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n,
         queryPathSub(*v.neighbours[i], end, n-1, visited, visited_res);
         visited[v.neighbours[i]->name] = 0;
     }
+}
+
+vector<string> CampusGraph::QueryShortestPath(const int start, const int end)
+{
+    /* A_star */
+    vector<string> res;
+    vector<CampusVertex*> fathers(vertices_.size());
+
+    /* vertice name, g, h */
+    unordered_map<string, pair<float, float>> open_set; 
+    map<string, bool> close_set;
+
+    open_set[vertices_[start].name].first = 0;
+    open_set[vertices_[start].name].second = distOfVertices(vertices_[start], vertices_[end]);
+    while(!open_set.empty())
+    {
+        CampusVertex* smallest;
+        float min_val = numeric_limits<float>::max();
+        for(auto item : open_set)
+        {
+            if(item.second.first + item.second.second < min_val)
+            {
+                smallest = vertices_map_[item.first];
+                min_val = item.second.first + item.second.second;
+            }
+        }
+        if(smallest->name == vertices_[end].name)
+        {
+            while(smallest->name != vertices_[start].name)
+            {
+                res.push_back(smallest->name);
+                smallest = fathers[vertices_index_map_[smallest->name]];
+            }
+            res.push_back(vertices_[start].name);
+            reverse(res.begin(), res.end());
+            return res;
+        }
+        close_set[smallest->name] = true;
+
+        for(int i = 0; i < smallest->neighbours.size(); i++)
+        {
+            CampusVertex* cur_neighbour = smallest->neighbours[i];
+            if(close_set.count(cur_neighbour->name) > 0)
+            {
+                continue;
+            }
+            /* if cur_neighbour not in openset */
+            float g = open_set[smallest->name].first + distOfVertices(*smallest, *cur_neighbour);
+            float h = distOfVertices(*cur_neighbour, vertices_[end]);
+            if(open_set.count(cur_neighbour->name) == 0)
+            {
+                open_set[cur_neighbour->name].first = g;
+                open_set[cur_neighbour->name].second = h;
+                fathers[vertices_index_map_[cur_neighbour->name]] = smallest;
+            }
+            else
+            {
+                if(open_set[cur_neighbour->name].first + 
+                    open_set[cur_neighbour->name].second > g+h)
+                    {
+                        open_set[cur_neighbour->name].first = g;
+                        open_set[cur_neighbour->name].second = h;
+                        fathers[vertices_index_map_[cur_neighbour->name]] = smallest;
+                    }
+            }
+            
+        }
+        open_set.erase(smallest->name);
+    }
+    return vector<string>();
 }
 
 float CampusGraph::getPathLength(std::vector<std::string>& path_strs)

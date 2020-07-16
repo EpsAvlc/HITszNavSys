@@ -16,7 +16,31 @@
 #include <functional>
 #include <mutex>
 #include <map>
+#include <cmath>
 
+/**
+ * @brief Minimum spanning tree's node.
+ * 
+ */
+struct MSTNode
+{
+    std::string name;
+    MSTNode* father = this;
+    std::vector<MSTNode*> children;
+    MSTNode(std::string& _name)
+    {
+        name = _name;
+    };
+    MSTNode* GetRoot()
+    {
+        MSTNode* cur = this;
+        while(cur != cur->father)
+        {
+            cur = cur->father;
+        }
+        return cur;
+    }
+};
 
 struct CampusVertex
 {
@@ -62,9 +86,20 @@ public:
      * @return std::vector<std::string> 
      */
     std::vector<std::string> QueryShortestPath(const int start, const int end);
+    std::vector<std::string> QueryShortestPath(const std::string& start, const std::string& end)
+    {
+        int start_index = vertices_index_map_[start];
+        int end_index = vertices_index_map_[end];
+        return QueryShortestPath(start_index, end_index);
+    }
 private:
     void addVertices();
     void addEdges();
+    void genMST();
+    float distOfVertices(CampusVertex& lhs, CampusVertex& rhs)
+    {
+        return sqrt((lhs.x - rhs.x) * (lhs.x - rhs.x) + (lhs.y - rhs.y) * (lhs.y - rhs.y));
+    }
     /**
      * @brief Get the Vertex Neighbour: Get a vertex's neighbour in a specific direction
      * 
@@ -73,9 +108,21 @@ private:
      * @return int: neighbour vertex's index. -1 for NULL
      */
     int getVertexNeighbour(int vertex_index, char neigh_dir);
+    /**
+     * @brief: give a query road result strings, generate the description.
+     * 
+     * @param res 
+     * @return std::string 
+     */
     std::string genResultDescription(std::vector<std::string>& res);
     void queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
     std::map<std::string, int>& visited, std::vector<std::vector<std::string>>& res);
+    /**
+     * @brief: get path length.
+     * 
+     * @param path_strs 
+     * @return float 
+     */
     float getPathLength(std::vector<std::string>& path_strs);
 
     std::vector<CampusVertex> vertices_;
@@ -84,7 +131,6 @@ private:
     std::map<std::string, int> vertices_index_map_;
     std::vector<std::pair<std::string, std::string>> edges_;
     std::map<std::pair<std::string, std::string>, int> edges_map_;
-
 };
 
 #endif // !CAMPUS_GRAPH__

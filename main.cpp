@@ -6,7 +6,7 @@
 int main()
 {
     CampusGraph cg;
-    CampusGraphDrawer cgd(cg);
-    cgd.Spin();
+    // CampusGraphDrawer cgd(cg);
+    // cgd.Spin();
     return 0;
 }
