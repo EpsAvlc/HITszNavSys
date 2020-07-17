@@ -163,7 +163,7 @@ void CampusGraphDrawer::Spin()
                         {
                             texts_[i].SetText("");
                         }
-                        string res_description = cg_.genResultDescription(res);
+                        string res_description = cg_.genNavigationResultDescription(res);
                         texts_[0].SetText(res_description);
                     }
                     if(pressed_count == 3)
@@ -187,6 +187,10 @@ void CampusGraphDrawer::Spin()
                     }
                     pressed_count ++;
                     break;
+                case 27:
+                    state_ = WELCOME;
+                    state_changed_ = true;
+                    continue;
                 default:
                     break;
                 }
@@ -200,7 +204,64 @@ void CampusGraphDrawer::Spin()
             }
             else if(state_ == GUIDE)
             {
+                static int last_curserOn = 0;
+                static int pressed_count = 0;
+                if(pressed_)
+                {
+                    switch (kb_input_)
+                    {
+                        {
+                            case 'd':
+                            case 's':
+                            case 'a':
+                            case 'w':
+                                vertex_buttons_[last_curserOn].SetCurserOn(false);
+                                int neigh = cg_.getVertexNeighbour(last_curserOn, kb_input_);
+                                if(neigh != -1)
+                                    last_curserOn = neigh;
+                                break;
+                        }
+                        case 10: // Enter;
+                        pressed_count ++;
+                        if(pressed_count == 1)
+                        {
+                            vector<vector<string>> all_paths(cg_.vertices_.size());
+                            for(int i = 0; i < cg_.vertices_.size(); i++)
+                            {
+                                if(cg_.vertices_[i].name.substr(0, 6) == "Litchi")
+                                    continue;
+                                if(i == last_curserOn)
+                                    continue;
+                                vector<string> path = cg_.QueryShortestPath(last_curserOn, i);
+                                all_paths[i] = path;
+                            }
+                            sort(all_paths.begin(), all_paths.end(), 
+                            [&](vector<string>& lhs, vector<string>& rhs)
+                            {
+                                return cg_.getPathLength(lhs) < cg_.getPathLength(rhs);
+                            }
+                            );
+                            for(int i = 0; i < texts_.size(); i++)
+                                texts_[i].SetText("");
+                            texts_[0].SetText(cg_.genGuideResultDescription(all_paths[0]));
+                        }
+                        if(pressed_count == 2)
+                        {
+
+                        }
+                        break;
+                        case 27:
+                        state_ = WELCOME;
+                        state_changed_ = true;
+                        continue;
+                    default:
+                        break;
+                    }
+                }
+                vertex_buttons_[last_curserOn].SetCurserOn(true);
+                texts_[8].SetText(cg_.vertices_[last_curserOn].description);
                 drawNavigationOrGuide();
+                state_changed_ = false;
             }
 
             pressed_ = false;
@@ -230,37 +291,41 @@ void CampusGraphDrawer::drawBackground()
     CUI::SetCursorPos(0, 13);
     printf("                          Designed By Cao Ming                             \n");
 
-    if(state_ == NAVIGATION || state_ == GUIDE)
+    char side_blank[40];
+    memset(side_blank, ' ', 40);
+    CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
+    CUI::SetForegroundColor(CUI::Color::WHITE);
+    for(int i = 1; i < 14; i++)
     {
-        char side_blank[40];
-        memset(side_blank, ' ', 40);
-        CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
-        CUI::SetForegroundColor(CUI::Color::WHITE);
-        for(int i = 1; i < 14; i++)
+        if(i == 1)
         {
-            if(i == 1)
-            {
-                CUI::SetBackgroundColor(CUI::Color::GREEN);
-                char title_array[40];
-                memset(title_array, ' ', 40);
-                string str_title = state_ == NAVIGATION ? "Navigation" : "Guide";
-                int start = (40 - str_title.size()) / 2; 
-                for(int i = 0; i < str_title.size(); i++)
-                {
-                    title_array[start + i] = str_title[i];   
-                }
-                CUI::SetCursorPos(76, i);
-                cout << string(title_array).substr(0, 39) << endl;
-            }
-            else if (i == 13)
-                CUI::SetBackgroundColor(CUI::Color::BLUE);
+            CUI::SetBackgroundColor(CUI::Color::GREEN);
+            char title_array[40];
+            memset(title_array, ' ', 40);
+            string str_title;
+            if(state_ == WELCOME)
+                str_title = "Welcome";
+            else if(state_ == NAVIGATION)
+                str_title = "Navigation";
             else
-                CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
+                str_title = "Guide";
+            
+            int start = (40 - str_title.size()) / 2; 
+            for(int i = 0; i < str_title.size(); i++)
+            {
+                title_array[start + i] = str_title[i];   
+            }
             CUI::SetCursorPos(76, i);
-            if(i != 1)
-                cout << string(side_blank).substr(0, 39) << endl;
+            cout << string(title_array).substr(0, 39) << endl;
         }
-           
+        else if (i == 13)
+            CUI::SetBackgroundColor(CUI::Color::BLUE);
+        else
+            CUI::SetBackgroundColor(CUI::Color::DEEP_GREEN);
+        CUI::SetCursorPos(76, i);
+        if(i != 1)
+            cout << string(side_blank).substr(0, 39) << endl;
+        
     }
 }
 
@@ -328,6 +393,7 @@ void CampusGraphDrawer::readKeyboardInput()
         case 'd': // right
         case 's': // down
         case 10: // enter
+        case 27: // esc
             pressed_ = true;
             kb_input_ = c;
             break;

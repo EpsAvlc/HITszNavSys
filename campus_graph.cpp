@@ -25,8 +25,6 @@ CampusGraph::CampusGraph()
 {
     addVertices();
     addEdges();
-    vector<string> res = QueryShortestPath("E", "T");
-    cout << genResultDescription(res) << endl;
 }
 
 void CampusGraph::addVertices()
@@ -235,7 +233,7 @@ void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n,
 
 vector<string> CampusGraph::QueryShortestPath(const int start, const int end)
 {
-    /* A_star */
+    /**************A_sta**************/
     vector<string> res;
     vector<CampusVertex*> fathers(vertices_.size());
 
@@ -277,9 +275,9 @@ vector<string> CampusGraph::QueryShortestPath(const int start, const int end)
             {
                 continue;
             }
-            /* if cur_neighbour not in openset */
             float g = open_set[smallest->name].first + distOfVertices(*smallest, *cur_neighbour);
             float h = distOfVertices(*cur_neighbour, vertices_[end]);
+            /* if cur_neighbour not in openset */
             if(open_set.count(cur_neighbour->name) == 0)
             {
                 open_set[cur_neighbour->name].first = g;
@@ -305,6 +303,8 @@ vector<string> CampusGraph::QueryShortestPath(const int start, const int end)
 
 float CampusGraph::getPathLength(std::vector<std::string>& path_strs)
 {
+    if(path_strs.size()==0)
+        return numeric_limits<float>::max();
     float res = 0;
     for(int i = 0; i < path_strs.size()-1; i++)
     {
@@ -354,7 +354,7 @@ int CampusGraph::getVertexNeighbour(int vertex_index, char neigh_dir)
     return -1;
 }
 
-string CampusGraph::genResultDescription(vector<string>& res)
+string CampusGraph::genNavigationResultDescription(vector<string>& res)
 {
     string description = "";
     if(res.size() != 0)
@@ -372,8 +372,18 @@ string CampusGraph::genResultDescription(vector<string>& res)
         description += "No way to reach the destination";
     }
     
-    description += ". Press Enter to return.";
+    description += ". \n Press Enter to return.";
     return description;
 }
 
+string CampusGraph::genGuideResultDescription(vector<string>& res)
+{
+    string description;
+    for(int i = 0; i < res.size(); i++)
+    {
+        description += res[i];
+        if(i != res.size() -1)
+            description += "->";
+    }
+}
 
