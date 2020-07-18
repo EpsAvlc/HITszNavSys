@@ -75,6 +75,7 @@ void CampusGraphDrawer::Spin()
         {
             if(state_ == WELCOME)
             {
+                state_changed_ = false;
                 static int last_curserOn = 0;
                 menu_buttons_[last_curserOn].SetCurserOn(false);
                 switch (kb_input_)

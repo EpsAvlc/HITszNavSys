@@ -27,7 +27,6 @@ private:
         WELCOME,
         NAVIGATION,
         GUIDE,
-        HELP,
     };
     void drawBackground();
     void drawNavigationOrGuide();
@@ -53,7 +52,7 @@ private:
     std::thread kb_thread_; 
     char kb_input_;
     std::mutex kb_mutex_;
-    bool state_changed_ = true, pressed_ = true;;
+    bool state_changed_ = true, pressed_ = false;;
     CampusGraph cg_;
     SystemState state_ = WELCOME;
 

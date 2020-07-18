@@ -412,7 +412,7 @@ string CampusGraph::genNavigationResultDescription(vector<string>& res)
                 angle = angle / M_PI * 180;
             }
             description = description +"-(" + dir_str;
-            description += to_string(int(angle)) + "°";
+            description += to_string(int(angle))=="0" ? "" :  to_string(int(angle));
             float dist = distOfVertices(*vertices_map_[res[i]], *vertices_map_[res[i-1]]);
             description = description + ',' + to_string(int(dist));
 
