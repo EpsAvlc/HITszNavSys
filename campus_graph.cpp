@@ -16,6 +16,8 @@
 #include <memory.h>
 #include <unistd.h>
 #include <termios.h>
+#include <cmath>
+#include <unordered_map>
 
 using namespace std;
 
@@ -31,60 +33,103 @@ void CampusGraph::addVertices()
     v.x = 108;
     v.y = 120;
     v.name = "E";
-    v.description = "";
+    v.description = "Buiding E, Civil Building, locate at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 155;
     v.y = 120;
     v.name = "D";
-    v.description = "";
+    v.description = "Buiding D,  Materia building, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 197;
     v.y = 120;
     v.name = "F";
-    v.description = "";
+    v.description = "Buiding F, Academic building, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 226;
     v.y = 120;
     v.name = "C";
-    v.description = "";
+    v.description = "Buiding C, Mechantronic building, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
-    v.x = 248;
+    v.x = 260;
     v.y = 163;
     v.name = "A";
-    v.description = "";
+    v.description = "Buiding A, Teaching buliding I, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 303;
     v.y = 149;
     v.name = "B";
-    v.description = "";
+    v.description = "Buiding B, Social Science building, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
     v.x = 345;
     v.y = 189;
     v.name = "G";
-    v.description = "";
+    v.description = "Buiding G, Sciences building, locates at (" + to_string((int)v.x) + 
+        ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
-    v.x = 428;
+    v.x = 400;
     v.y = 228;
     v.name = "K";
-    v.description = "";
+    v.description = "Buiding K, Experiment building, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
     vertices_.push_back(v);
 
-    v.x = 427;
+    v.x = 400;
     v.y = 282;
     v.name = "J";
+    v.description = "Building J, Recreation center, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 440;
+    v.y = 303;
+    v.name = "H";
+    v.description = "Building H, Main building, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 410;
+    v.y = 351;
+    v.name = "T";
+    v.description = "Building T, Teaching building II, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+    
+    v.x = 260;
+    v.y = 351;
+    v.name = "L1";
+    v.description = "Building L1, Dormitory I, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 147;
+    v.y = 351;
+    v.name = "L2";
+    v.description = "Building L2, Dormitory II, locates at (" + to_string((int)v.x) + 
+     ", " + to_string((int)v.y) + ").";
+    vertices_.push_back(v);
+
+    v.x = 170;
+    v.y = 210;
+    v.name = "Litchi Hill 1";
     v.description = "";
     vertices_.push_back(v);
 
-    v.x = 461;
-    v.y = 303;
-    v.name = "H";
+    v.x = 300;
+    v.y = 230;
+    v.name = "Litchi Hill 2";
     v.description = "";
     vertices_.push_back(v);
 
@@ -107,6 +152,12 @@ void CampusGraph::addEdges()
     edges_.push_back(make_pair("K", "J"));
     edges_.push_back(make_pair("H", "J"));
     edges_.push_back(make_pair("H", "K"));
+    edges_.push_back(make_pair("H", "T"));
+    edges_.push_back(make_pair("J", "T"));
+    edges_.push_back(make_pair("L1", "T"));
+    edges_.push_back(make_pair("L1", "A"));
+    edges_.push_back(make_pair("L1", "L2"));
+    edges_.push_back(make_pair("L2", "D"));
 
     for(int i = 0; i < edges_.size(); i++)
     {
@@ -118,20 +169,38 @@ void CampusGraph::addEdges()
     }
 }
 
-vector<string> CampusGraph::QueryPath(CampusVertex& start, CampusVertex& end, int n)
+
+vector<string> CampusGraph::QueryPathViaN(CampusVertex& start, CampusVertex& end, int n)
 {
     map<string, int> visited;
     visited[start.name] = n;
     vector<vector<string>> visited_res;
     queryPathSub(start, end, n-1, visited, visited_res);
     
-    return visited_res[0];
+    if(visited_res.size() > 0)
+    {
+        float shortest_length = numeric_limits<float>::max();
+        int shortest_index = -1;
+        for(int i = 0; i < visited_res.size(); i++)
+        {
+            float cur_length = getPathLength(visited_res[i]);
+            if(cur_length < shortest_length)
+            {
+                shortest_length = cur_length;
+                shortest_index = i;
+            }
+        }
+        return visited_res[shortest_index];
+    }
+    else
+    {
+        return vector<string>();
+    }
 }
 
 void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
     map<string, int>& visited, vector<vector<string>>& visited_res)
 {
-    cout << v.name << ", " << n << endl;
     if(n == 0)
     {
         if(v.name == end.name)
@@ -162,143 +231,217 @@ void CampusGraph::queryPathSub(CampusVertex& v, CampusVertex& end, int n,
     }
 }
 
-/*------------ CampusGraphDrawer --------------*/
-
-CampusGraphDrawer::CampusGraphDrawer(const CampusGraph& cg): cg_{cg} 
+vector<string> CampusGraph::QueryShortestPath(const int start, const int end)
 {
-    kb_thread_ = std::thread(std::bind(&CampusGraphDrawer::readKeyboardInput, this));
-    kb_thread_.detach();
+    /**************A_sta**************/
+    vector<string> res;
+    vector<CampusVertex*> fathers(vertices_.size());
 
-    const float origin_x = 98;
-    const float origin_y = 20;
-    const float kGridWidth = 5;
-    const float kGridHeight = 30;
-    for(int i = 0; i < cg_.vertices_.size(); i++)
-    {
-        float grid_x = (cg_.vertices_[i].x - origin_x) / kGridWidth;
-        float grid_y = (cg_.vertices_[i].y - origin_y) / kGridHeight;
-        CUI::Button b(grid_x, grid_y, cg_.vertices_[i].name);
-        buttons_.push_back(b);
-    }
-    for(int i = 0; i < cg_.edges_.size(); i++)
-    {
-        CUI::PointI start, end;
-        start.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().x;
-        start.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].first]].Pos().y;
-        end.x = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().x;
-        end.y = buttons_[cg_.vertices_index_map_[cg_.edges_[i].second]].Pos().y;
-        CUI::Polyline pl(start, end);
-        polylines_.push_back(pl);
-    }
-    /* Test */
-    vector<string> res = cg_.QueryPath("A", "H", 5);
-    for(int i = 1; i < res.size(); i++)
-    {
-        int edge_index = cg_.edges_map_[make_pair(res[i], res[i-1])];
-        polylines_[edge_index].SetActive(true);
-    }
-};
+    /* vertice name, g, h */
+    unordered_map<string, pair<float, float>> open_set; 
+    map<string, bool> close_set;
 
-void CampusGraphDrawer::Spin()
-{
-    system("clear");
-    char c;
-    while(1)
+    open_set[vertices_[start].name].first = 0;
+    open_set[vertices_[start].name].second = distOfVertices(vertices_[start], vertices_[end]);
+    while(!open_set.empty())
     {
-        if(state_changed_)
+        CampusVertex* smallest;
+        float min_val = numeric_limits<float>::max();
+        for(auto item : open_set)
         {
-            if(state_ == NAVIGATION)
+            if(item.second.first + item.second.second < min_val)
             {
-                static int last_curserOn = 0;
-                buttons_[last_curserOn].SetCurserOn(false);
-                switch (kb_input_)
-                {
-                case 'd':
-                case 's':
-                    if(last_curserOn < cg_.vertices_.size() - 1)
-                        last_curserOn ++;
-                    break;
-                case 'a':
-                case 'w':
-                    if(last_curserOn > 0)
-                        last_curserOn --;
-                default:
-                    break;
-                }
-                buttons_[last_curserOn].SetCurserOn(true);
-                drawNavigation();
+                smallest = vertices_map_[item.first];
+                min_val = item.second.first + item.second.second;
             }
-
-            state_changed_ = false;
-        } 
-        this_thread::sleep_for(chrono::milliseconds(300));
-    }
-}
-
-void CampusGraphDrawer::drawNavigation()
-{
-    CUI::SetBackgroundColor(CUI::Color::WHITE);
-    char blank[75] = {};
-    memset(blank, ' ', 75);
-    CUI::SetCursorPos(0, 0);
-    for(int i = 0; i < 10; i++)
-    {
-        cout << string(blank) << endl;
-    }
-
-    CUI::SetForegroundColor(CUI::Color::YELLO);
-    CUI::SetBackgroundColor(CUI::Color::BLUE);
-    CUI::SetCursorPos(0, 0);
-    printf("                      HITSZ Campus Navigation System                       \n");
-
-    for(int i = 0; i < polylines_.size(); i++)
-    {
-        polylines_[i].Draw();
-    }
-    // polylines_.back().Draw();
-
-    for(int i = 0; i < buttons_.size(); i++)
-    {
-        buttons_[i].Draw();
-    }
-}
-
-char nonblocking_input( void )
-{
-    char input_ch;
-    struct termios newt, oldt;
-    
-    int tty = open("/dev/tty", O_RDONLY);    //Open control terminal
-    
-    tcgetattr(tty, &oldt);            //Get terminal properties
-    newt = oldt;
-    
-    //Set characters are not buffered(~ICANON) and do not echo(~ECHO).
-    //You can also choose only one of them.
-    newt.c_lflag &= ~( ICANON | ECHO );
-    tcsetattr(tty, TCSANOW, &newt);    
-    read(tty, &input_ch, 1);
-    tcsetattr(tty, TCSANOW, &oldt);        //Restore terminal properties
-    return input_ch;
-}
-
-void CampusGraphDrawer::readKeyboardInput()
-{
-    char c;
-    while(c = nonblocking_input())
-    {
-        lock_guard<mutex> kb_lock(kb_mutex_);
-        switch (c)
+        }
+        if(smallest->name == vertices_[end].name)
         {
-        case 'a': // left
-        case 'w': // up
-        case 'd': // right
-        case 's': // down
-            state_changed_ = true;
-            kb_input_ = c;
-            break;
-        default:
-            break;
+            while(smallest->name != vertices_[start].name)
+            {
+                res.push_back(smallest->name);
+                smallest = fathers[vertices_index_map_[smallest->name]];
+            }
+            res.push_back(vertices_[start].name);
+            reverse(res.begin(), res.end());
+            return res;
+        }
+        close_set[smallest->name] = true;
+
+        for(int i = 0; i < smallest->neighbours.size(); i++)
+        {
+            CampusVertex* cur_neighbour = smallest->neighbours[i];
+            if(close_set.count(cur_neighbour->name) > 0)
+            {
+                continue;
+            }
+            float g = open_set[smallest->name].first + distOfVertices(*smallest, *cur_neighbour);
+            float h = distOfVertices(*cur_neighbour, vertices_[end]);
+            /* if cur_neighbour not in openset */
+            if(open_set.count(cur_neighbour->name) == 0)
+            {
+                open_set[cur_neighbour->name].first = g;
+                open_set[cur_neighbour->name].second = h;
+                fathers[vertices_index_map_[cur_neighbour->name]] = smallest;
+            }
+            else
+            {
+                if(open_set[cur_neighbour->name].first + 
+                    open_set[cur_neighbour->name].second > g+h)
+                    {
+                        open_set[cur_neighbour->name].first = g;
+                        open_set[cur_neighbour->name].second = h;
+                        fathers[vertices_index_map_[cur_neighbour->name]] = smallest;
+                    }
+            }
+            
+        }
+        open_set.erase(smallest->name);
+    }
+    return vector<string>();
+}
+
+float CampusGraph::getPathLength(std::vector<std::string>& path_strs)
+{
+    if(path_strs.size()==0)
+        return numeric_limits<float>::max();
+    float res = 0;
+    for(int i = 0; i < path_strs.size()-1; i++)
+    {
+        CampusVertex& start = *vertices_map_[path_strs[i]];
+        CampusVertex& end = *vertices_map_[path_strs[i+1]];
+        float cur_length = sqrt((start.x - end.x) * (start.x - end.x)  +
+            (start.y - end.y) * (start.y - end.y));
+        res += cur_length;
+    }
+    return res;
+}
+
+int CampusGraph::getVertexNeighbour(int vertex_index, char neigh_dir)
+{
+    function<bool(int, int, int, int)> neigh_func;
+    switch (neigh_dir)
+    {
+    case 'w':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (y2 < y1) && (y1 - y2 > abs(x2-x1));};
+        break;
+    case 'a':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (x2 < x1) && (x1 - x2) > abs(y2 - y1);};
+        break;
+    case 's':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (y2 > y1) && (y2 - y1) > abs(x2- x1);};
+        break;
+    case 'd':
+        neigh_func = [](int x1, int y1, int x2, int y2)
+            {return (x2 > x1) && (x2 -x1) > abs(y2 - y1);};
+        break;
+    default:
+        break;
+    }
+    vector<CampusVertex*> neighs = vertices_[vertex_index].neighbours;
+    for(int i = 0; i < neighs.size(); i++)
+    {
+        int x1 = vertices_[vertex_index].x;
+        int y1 = vertices_[vertex_index].y;
+        int x2 = neighs[i]->x;
+        int y2 = neighs[i]->y;
+        if(neigh_func(x1, y1, x2, y2))
+            return vertices_index_map_[neighs[i]->name];
+    }
+    return -1;
+}
+
+string CampusGraph::genNavigationResultDescription(vector<string>& res)
+{
+    string description = "";
+    if(res.size() != 0)
+    {
+        description += "Best way has been highlighted, and is ";
+        description += res[0];
+        for(int i = 1; i < res.size(); i++)
+        {
+            float angle = 0;
+            string dir_str = "";
+            double dir_x = vertices_map_[res[i]]->x - vertices_map_[res[i-1]]->x;
+            double dir_y = vertices_map_[res[i]]->y - vertices_map_[res[i-1]]->y;
+            if(dir_x == 0 && dir_y < 0)
+            {
+                dir_str = "N";
+                angle = 0;
+            }
+            else if(dir_x == 0 && dir_y > 0)
+            {
+                dir_str = "S";
+                angle = 0;
+            }
+            else if(dir_x > 0 && dir_y == 0)
+            {
+                dir_str = "E";
+                angle = 0;
+            }
+            else if(dir_x < 0 && dir_y == 0)
+            {
+                dir_str = "W";
+                angle = 0;
+            } 
+            else if(dir_x > 0 && dir_y < 0)
+            {
+                dir_str = "NE";
+                angle = acos(-dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x > 0 && dir_y > 0)
+            {
+                dir_str = "SE";
+                angle = acos(dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x < 0 && dir_y < 0)
+            {
+                dir_str = "NW";
+                angle = acos(-dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x < 0 && dir_y > 0)
+            {
+                dir_str = "SW";
+                angle = acos(dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            description = description +"-(" + dir_str;
+            description += to_string(int(angle))=="0" ? "" :  to_string(int(angle));
+            float dist = distOfVertices(*vertices_map_[res[i]], *vertices_map_[res[i-1]]);
+            description = description + ',' + to_string(int(dist));
+
+            
+            description += ")->";
+            description += res[i];
         }
     }
+    else
+    {
+        description += "No way to reach the destination";
+    }
+    
+    description += ". \n Press Enter to return.";
+    return description;
 }
+
+string CampusGraph::genGuideResultDescription(vector<vector<string>>& res)
+{
+    string description = "All paths from "  + res[0][0] + " are: \n";
+    for(int i = 0; i < res.size(); i++)
+    {
+        if(res[i].size() == 0)
+            continue;
+        float length = getPathLength(res[i]);
+        description = description + res[i][0] + "->" + res[i].back() + " " + to_string(int(length)) + " ";
+        if(i % 2 == 1)
+            description += '\n';
+    }
+    return description;
+}
+
