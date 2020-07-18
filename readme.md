@@ -9,17 +9,19 @@
 度从小到大的顺序排列(不能使用迪杰斯特拉算法)。
 
 ##　实现细节
-
+=======
 本工程除了实现了报告里的内容要求外,还实现了一套基于 Linux ANSI ESC code 的 UI 系统(源文件存放在 UI 文件夹下)。ANSI ESC code 是 Unix 下的控制命令行输出颜色的程序规范,不需要任何库文件。本工程已在 Ubuntu 16.04 下测试通过。Windows 因为对 ANSI ESC code 的支持不太好,故应该需要使用 WINAPI 修改绘图的函数。但是时间来不及了就没做了。GUI 部分涉及相当多的逻辑。
 
 整个界面是一个有限状态机,通过 CampusGraphDrawer.Spin()函数在死循环里响应键盘输入。同时每个建筑物都是一个 Button 类,每个绘制的路径都是一个 Polyline 类,每个在图中显示的话都是 text 类。相当于实现了一个 minimal 的、基于 ANSI ESC code 的类 QT 小程序(但不需要任何其他库)。第三个要求使用深度优先搜索+回溯法，第四个要求使用A*算法。
 
 ## 使用说明
-
 wasd控制上下左右，enter 为选择，ESC为返回主菜单。
 
 ## 效果图
 
+=======
+wasd控制上下左右，enter 为选择，ESC为返回主菜单。
+## 效果图
 ![](resources/main_page.png)
 ![](resources/Picture1.png)
 ![](resources/Picture2.png)

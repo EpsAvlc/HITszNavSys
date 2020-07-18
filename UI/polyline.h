@@ -20,9 +20,11 @@ namespace CUI
         Polyline(const PointI& start, const PointI& end) 
             : start_(start), end_(end){}
         virtual void Draw() override;
+        void SetActive(bool active) {active_ = active; }
     private:
         PointI start_;
         PointI end_;
+        bool active_ = false;
     };
 }
 #endif // !POLYLINE_H__
