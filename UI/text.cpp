@@ -14,8 +14,8 @@ using namespace std;
 
 void Text::Draw()
 {
-    SetForegroundColor(WHITE);
-    SetBackgroundColor(DEEP_GREEN);
+    SetForegroundColor(fg_color_);
+    SetBackgroundColor(bg_color_);
     SetCursorPos(pos_);
     int cur_y = pos_.y;
     int line_count = 0;
@@ -26,9 +26,10 @@ void Text::Draw()
         if(text_[i] == '\n')
         {
             line_count = 0;
-            SetCursorPos(pos_.x-1, ++cur_y);
+            SetCursorPos(pos_.x, ++cur_y);
+            continue;
         }
-        if((line_count + 1) % width_ == 0)
+        if((line_count) % width_ == 0)
         {
             cout << endl;
             cur_y ++;

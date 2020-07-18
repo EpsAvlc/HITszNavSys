@@ -117,10 +117,17 @@ void CampusGraphDrawer::Spin()
                 {
                     if(pressed_count == 2)
                     {
+                        texts_[6].SetColor(CUI::RED);
                         n_str += kb_input_;
-                        texts_[6].SetText(n_str);
+                        texts_[6].SetText("        " + n_str);
                     }
 
+                }
+                if(state_changed_)
+                {
+                    clearAllState();
+                    texts_[0].SetText("1. Please select starting point.");
+                    texts_[7].SetText("--------------------------");
                 }
                 if(pressed_ == true)
                 {
@@ -139,16 +146,18 @@ void CampusGraphDrawer::Spin()
                 case 10:
                     if(pressed_count == 0)
                     {
-                        texts_[2].SetText(cg_.vertices_[last_curserOn].name);
+                        texts_[2].SetColor(CUI::RED);
+                        texts_[2].SetText("        " + cg_.vertices_[last_curserOn].name);
                         vertex_buttons_[last_curserOn].SetPressed(true);
                         texts_[3].SetText("2. Please select destination.");
                         from_vertex = last_curserOn;
                     }
                     if(pressed_count == 1)
                     {
-                        texts_[4].SetText(cg_.vertices_[last_curserOn].name);
+                        texts_[4].SetColor(CUI::RED);
+                        texts_[4].SetText("        " + cg_.vertices_[last_curserOn].name);
                         vertex_buttons_[last_curserOn].SetPressed(true);
-                        texts_[5].SetText("Please input n.");
+                        texts_[5].SetText("3. Please input n.");
                         to_vertex = last_curserOn;
                     }
                     if(pressed_count == 2)
@@ -183,13 +192,14 @@ void CampusGraphDrawer::Spin()
                         }
                         n_str = "";
                         texts_[0].SetText("1. Please select starting point.");
-                        
+                        texts_[7].SetText("--------------------------");
                     }
                     pressed_count ++;
                     break;
                 case 27:
                     state_ = WELCOME;
                     state_changed_ = true;
+                    clearAllState();
                     continue;
                 default:
                     break;
@@ -206,6 +216,11 @@ void CampusGraphDrawer::Spin()
             {
                 static int last_curserOn = 0;
                 static int pressed_count = 0;
+                if(state_changed_)
+                {
+                    clearAllState();
+                    texts_[7].SetText("--------------------------");
+                }
                 if(pressed_)
                 {
                     switch (kb_input_)
@@ -222,8 +237,8 @@ void CampusGraphDrawer::Spin()
                                 break;
                         }
                         case 10: // Enter;
-                        pressed_count ++;
-                        if(pressed_count == 1)
+                        // pressed_count ++;
+                        if(pressed_count == 0)
                         {
                             vector<vector<string>> all_paths(cg_.vertices_.size());
                             for(int i = 0; i < cg_.vertices_.size(); i++)
@@ -243,11 +258,11 @@ void CampusGraphDrawer::Spin()
                             );
                             for(int i = 0; i < texts_.size(); i++)
                                 texts_[i].SetText("");
-                            texts_[0].SetText(cg_.genGuideResultDescription(all_paths[0]));
+                            texts_[0].SetText(cg_.genGuideResultDescription(all_paths));
                         }
                         if(pressed_count == 2)
                         {
-
+                            
                         }
                         break;
                         case 27:
@@ -259,7 +274,6 @@ void CampusGraphDrawer::Spin()
                     }
                 }
                 vertex_buttons_[last_curserOn].SetCurserOn(true);
-                texts_[8].SetText(cg_.vertices_[last_curserOn].description);
                 drawNavigationOrGuide();
                 state_changed_ = false;
             }
@@ -331,6 +345,7 @@ void CampusGraphDrawer::drawBackground()
 
 void CampusGraphDrawer::drawWelcome()
 {
+    clearAllState();
     drawBackground();
 
 
@@ -338,12 +353,25 @@ void CampusGraphDrawer::drawWelcome()
     {
         menu_buttons_[i].Draw();
     }
+
+    string welcome_str = 
+    R"(       _   __ ____  _____  __ 
+      / | / // __ \/ ___/ / / 
+     /  |/ // /_/ /\__ \ / /  
+    / /|  // _, _/___/ // /___
+   /_/ |_//_/ |_|/____//_____/)";
+    texts_[2].SetColor(CUI::YELLO);
+    texts_[2].SetText(welcome_str);
+    texts_[2].Draw();
+    texts_[2].SetColor(CUI::WHITE);
+    texts_[8].SetText("Harbin Institute of Technology SZ");
+    texts_[8].Draw();
 }
 
 void CampusGraphDrawer::drawNavigationOrGuide()
 {
+    // clearAllState();
     drawBackground();
-
     for(int i = 0; i < polylines_.size(); i++)
     {
         polylines_[i].Draw();

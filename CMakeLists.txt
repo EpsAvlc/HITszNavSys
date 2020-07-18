@@ -14,8 +14,10 @@ target_link_libraries(campus_graph
 CUI_LIB
 )
 
+if(UNIX)
 add_executable(nav_sys main.cpp)
 target_link_libraries(nav_sys
 campus_graph
 pthread
 )
+endif (UNIX)

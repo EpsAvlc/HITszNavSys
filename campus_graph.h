@@ -115,7 +115,7 @@ private:
      * @return std::string 
      */
     std::string genNavigationResultDescription(std::vector<std::string>& res);
-    std::string genGuideResultDescription(std::vector<std::string>& res);
+    std::string genGuideResultDescription(std::vector<std::vector<std::string>>& res);
     void queryPathSub(CampusVertex& v, CampusVertex& end, int n, 
     std::map<std::string, int>& visited, std::vector<std::vector<std::string>>& res);
     /**

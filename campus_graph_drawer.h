@@ -33,6 +33,22 @@ private:
     void drawNavigationOrGuide();
     void drawWelcome();
     void readKeyboardInput();
+    void clearAllState()
+    {
+        for(int i = 0; i < vertex_buttons_.size(); i++)
+        {
+            vertex_buttons_[i].SetPressed(false);
+            vertex_buttons_[i].SetCurserOn(false);
+        }
+        for(int i = 0; i < polylines_.size(); i++)
+        {
+            polylines_[i].SetActive(false);
+        }
+        for(int i = 0; i < texts_.size(); i++)
+        {
+            texts_[i].SetText("");
+        }
+    }
 
     std::thread kb_thread_; 
     char kb_input_;

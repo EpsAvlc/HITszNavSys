@@ -360,11 +360,65 @@ string CampusGraph::genNavigationResultDescription(vector<string>& res)
     if(res.size() != 0)
     {
         description += "Best way has been highlighted, and is ";
-        for(int i = 0; i < res.size(); i++)
+        description += res[0];
+        for(int i = 1; i < res.size(); i++)
         {
+            float angle = 0;
+            string dir_str = "";
+            double dir_x = vertices_map_[res[i]]->x - vertices_map_[res[i-1]]->x;
+            double dir_y = vertices_map_[res[i]]->y - vertices_map_[res[i-1]]->y;
+            if(dir_x == 0 && dir_y < 0)
+            {
+                dir_str = "N";
+                angle = 0;
+            }
+            else if(dir_x == 0 && dir_y > 0)
+            {
+                dir_str = "S";
+                angle = 0;
+            }
+            else if(dir_x > 0 && dir_y == 0)
+            {
+                dir_str = "E";
+                angle = 0;
+            }
+            else if(dir_x < 0 && dir_y == 0)
+            {
+                dir_str = "W";
+                angle = 0;
+            } 
+            else if(dir_x > 0 && dir_y < 0)
+            {
+                dir_str = "NE";
+                angle = acos(-dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x > 0 && dir_y > 0)
+            {
+                dir_str = "SE";
+                angle = acos(dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x < 0 && dir_y < 0)
+            {
+                dir_str = "NW";
+                angle = acos(-dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            else if(dir_x < 0 && dir_y > 0)
+            {
+                dir_str = "SW";
+                angle = acos(dir_y / sqrt(dir_x * dir_x + dir_y * dir_y));
+                angle = angle / M_PI * 180;
+            }
+            description = description +"-(" + dir_str;
+            description += to_string(int(angle)) + "°";
+            float dist = distOfVertices(*vertices_map_[res[i]], *vertices_map_[res[i-1]]);
+            description = description + ',' + to_string(int(dist));
+
+            
+            description += ")->";
             description += res[i];
-            if(i != res.size() -1)
-                description += "->";
         }
     }
     else
@@ -376,14 +430,18 @@ string CampusGraph::genNavigationResultDescription(vector<string>& res)
     return description;
 }
 
-string CampusGraph::genGuideResultDescription(vector<string>& res)
+string CampusGraph::genGuideResultDescription(vector<vector<string>>& res)
 {
-    string description;
+    string description = "All paths from "  + res[0][0] + " are: \n";
     for(int i = 0; i < res.size(); i++)
     {
-        description += res[i];
-        if(i != res.size() -1)
-            description += "->";
+        if(res[i].size() == 0)
+            continue;
+        float length = getPathLength(res[i]);
+        description = description + res[i][0] + "->" + res[i].back() + " " + to_string(int(length)) + " ";
+        if(i % 2 == 1)
+            description += '\n';
     }
+    return description;
 }
 
